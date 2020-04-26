@@ -36,7 +36,6 @@ pipeline{
                     echo "Git commit id: ${env.GIT_COMMIT_ID}"
                     sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
                     sh 'docker push ujjwaldocker/hello-react:${IMAGETAG}'
-                 }
             }   
         }
 
