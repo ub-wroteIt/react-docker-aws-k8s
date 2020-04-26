@@ -28,12 +28,12 @@ pipeline{
 
         stage('Build & Push Docker'){
              steps{
-                 GIT_COMMIT_ID = sh (script: 'git log -1 --pretty=%H',returnStdout: true).trim()
-                 TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S',returnStdout: true).trim()
-                 echo "Git commit id: ${GIT_COMMIT_ID}"
-                 IMAGETAG="${GIT_COMMIT_ID}-${TIMESTAMP}"
-                 sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
-                 sh 'docker push ujjwaldocker/hello-react:${IMAGETAG}'
+                 env.GIT_COMMIT_ID = sh (script: 'git log -1 --pretty=%H',returnStdout: true).trim()
+                 env.TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S',returnStdout: true).trim()
+                 echo "Git commit id: ${env.GIT_COMMIT_ID}"
+                 env.IMAGETAG="${env.GIT_COMMIT_ID}-${env.TIMESTAMP}"
+                 sh 'docker build -t ujjwaldocker/hello-react:${env.IMAGETAG} .'
+                 sh 'docker push ujjwaldocker/hello-react:${env.IMAGETAG}'
              }   
         }
 
@@ -68,26 +68,15 @@ pipeline{
 
 
         stage('Update Blue with New Release'){
-            if (userInput['DEPLOY_TO_PROD'] == true) {
+            steps{
+               input message: 'Finished verification? (Click "Proceed" to continue)'
                sh 'kops version'
                sh 'kubectl config use-context bluecluster.k8s.local'
                sh 'kubectl set image deployments/${DEPLOYMENT_NAME} ${DEPLOYMENT_NAME}=docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
                sh 'kubectl rollout status deployments/kubernetes-bootcamp'
                echo "Deleting Green Environment..."
-               sh 'kops delete cluster --name ${KOPS_GREEN_CLUSTER_NAME} --yes '
-            }
+               sh 'kops delete cluster --name ${KOPS_GREEN_CLUSTER_NAME} --yes'
+            }   
         }
     }
-    def userInput
-        try {
-            timeout(time: 60, unit: 'SECONDS') {
-            userInput = input message: 'Proceed to Production?', parameters: [booleanParam(defaultValue: false, description: 'Ticking this box will do a deployment on Prod', name: 'DEPLOY_TO_PROD'),
-                                                                        booleanParam(defaultValue: false, description: 'First Deployment on Prod?', name: 'PROD_BLUE_DEPLOYMENT')]}
-        }
-        catch (err) {
-            def user = err.getCauses()[0].getUser()
-            echo "Aborted by:\n ${user}"
-            currentBuild.result = "SUCCESS"
-            return
-        }
 }
