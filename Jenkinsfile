@@ -58,6 +58,11 @@ pipeline{
         }
         
         stage('Validating K8s cluster') {
+            environment{
+                KOPS_GREEN_CLUSTER_NAME = "greencluster.k8s.local"
+                DEPLOYMENT_NAME = "react-app-kubernetes"
+                KOPS_STATE_STORE = "s3://greencluster-for-reactapp-state-store"
+            }
             options {
                 timeout(time: 300, unit: 'MINUTES') 
             }            
@@ -69,6 +74,11 @@ pipeline{
         }
 
         stage('Deploy on AWS & Expose service'){
+            environment{
+                KOPS_GREEN_CLUSTER_NAME = "greencluster.k8s.local"
+                DEPLOYMENT_NAME = "react-app-kubernetes"
+                KOPS_STATE_STORE = "s3://greencluster-for-reactapp-state-store"
+            }
             steps{
                withAWS(credentials:'jenkins-aws'){ 
                     sh 'kubectl create deployment ${DEPLOYMENT_NAME} --image=docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
