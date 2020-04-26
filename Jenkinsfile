@@ -59,7 +59,7 @@ pipeline{
         
         stage('Validating K8s cluster') {
             options {
-                timeout(time: 10, unit: 'MINUTES') 
+                timeout(time: 300, unit: 'MINUTES') 
             }            
             steps {
                 withAWS(credentials:'jenkins-aws'){
