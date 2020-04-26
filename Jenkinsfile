@@ -35,7 +35,12 @@ pipeline{
              steps{
                     echo "Git commit id: ${env.GIT_COMMIT_ID}"
                     sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
+                    sh 'echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin'
                     sh 'docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
+            }
+            withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                sh 'docker login -u ${USERNAME} -p ${PASSWORD}'
+                sh 'docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
             }   
         }
 
