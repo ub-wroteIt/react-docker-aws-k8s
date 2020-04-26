@@ -35,7 +35,7 @@ pipeline{
              steps{
                     echo "Git commit id: ${env.GIT_COMMIT_ID}"
                     sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
-                    sh 'sudo docker push ujjwaldocker/hello-react:${IMAGETAG}'
+                    sh 'docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
             }   
         }
 
