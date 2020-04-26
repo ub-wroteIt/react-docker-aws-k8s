@@ -44,12 +44,14 @@ pipeline{
         }
 
         stage('Create K8s cluster') {
+            environment{
+                KOPS_GREEN_CLUSTER_NAME = "greencluster.k8s.local"
+                DEPLOYMENT_NAME = "react-app-kubernetes"
+                KOPS_STATE_STORE = "s3://greencluster-for-reactapp-state-store"
+            }
             steps {
                 withAWS(credentials:'jenkins-aws'){    
                     sh 'kops version'
-                    sh 'export KOPS_GREEN_CLUSTER_NAME=greencluster.k8s.local'
-                    sh 'export DEPLOYMENT_NAME=react-app-kubernetes'
-                    sh 'export KOPS_STATE_STORE=s3://greencluster-for-reactapp-state-store'
                     sh 'kops create cluster --node-count=1 --master-size=t2.small  --node-size=t2.small --zones=us-east-1a --name=${KOPS_GREEN_CLUSTER_NAME}'
                     sh 'kops update cluster --name ${KOPS_GREEN_CLUSTER_NAME} --yes'
                 }
