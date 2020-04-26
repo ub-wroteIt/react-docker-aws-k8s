@@ -16,7 +16,7 @@ pipeline{
 
         stage('Test React App'){
              steps{
-                 sh 'npm run test'
+                 sh 'npm run test-ci'
              }   
         }
 
