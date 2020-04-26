@@ -27,7 +27,7 @@ pipeline{
         }
 
         stage('Build & Push Docker'){
-             withEnv(){
+             environment{
                     GIT_COMMIT_ID = sh (script: 'git log -1 --pretty=%H',returnStdout: true).trim()
                     TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S',returnStdout: true).trim()
                     IMAGETAG="${env.GIT_COMMIT_ID}-${TIMESTAMP}"
