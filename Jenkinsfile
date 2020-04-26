@@ -32,13 +32,10 @@ pipeline{
                     TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S',returnStdout: true).trim()
                     IMAGETAG="${env.GIT_COMMIT_ID}-${TIMESTAMP}"
              }       
-             steps{
-                    echo "Git commit id: ${env.GIT_COMMIT_ID}"
-                    sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
-                    sh 'echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin'
-                    sh 'docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
-            }
             withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                echo "Git commit id: ${env.GIT_COMMIT_ID}"
+                sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
+                sh 'docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
                 sh 'docker login -u ${USERNAME} -p ${PASSWORD}'
                 sh 'docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
             }   
