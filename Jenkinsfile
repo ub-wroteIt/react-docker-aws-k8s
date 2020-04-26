@@ -52,7 +52,6 @@ pipeline{
             steps {
                 withAWS(credentials:'jenkins-aws'){    
                     sh 'kops version'
-                    sh 'kops create cluster --node-count=1 --master-size=t2.small  --node-size=t2.small --zones=us-east-1a --name=${KOPS_GREEN_CLUSTER_NAME}'
                     sh 'kops update cluster --name ${KOPS_GREEN_CLUSTER_NAME} --yes'
                 }
             }
