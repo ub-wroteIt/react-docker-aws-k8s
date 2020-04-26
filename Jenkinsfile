@@ -28,12 +28,14 @@ pipeline{
 
         stage('Build & Push Docker'){
              steps{
-                 env.GIT_COMMIT_ID = sh (script: 'git log -1 --pretty=%H',returnStdout: true).trim()
-                 env.TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S',returnStdout: true).trim()
-                 echo "Git commit id: ${env.GIT_COMMIT_ID}"
-                 env.IMAGETAG="${env.GIT_COMMIT_ID}-${env.TIMESTAMP}"
-                 sh 'docker build -t ujjwaldocker/hello-react:${env.IMAGETAG} .'
-                 sh 'docker push ujjwaldocker/hello-react:${env.IMAGETAG}'
+                 withEnv(){
+                    GIT_COMMIT_ID = sh (script: 'git log -1 --pretty=%H',returnStdout: true).trim()
+                    TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S',returnStdout: true).trim()
+                    echo "Git commit id: ${env.GIT_COMMIT_ID}"
+                    IMAGETAG="${env.GIT_COMMIT_ID}-${TIMESTAMP}"
+                    sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
+                    sh 'docker push ujjwaldocker/hello-react:${IMAGETAG}'
+                 }
              }   
         }
 
