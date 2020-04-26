@@ -1,18 +1,6 @@
 pipeline{
     agent any
     stages{
-        def userInput
-        try {
-            timeout(time: 60, unit: 'SECONDS') {
-            userInput = input message: 'Proceed to Production?', parameters: [booleanParam(defaultValue: false, description: 'Ticking this box will do a deployment on Prod', name: 'DEPLOY_TO_PROD'),
-                                                                        booleanParam(defaultValue: false, description: 'First Deployment on Prod?', name: 'PROD_BLUE_DEPLOYMENT')]}
-        }
-        catch (err) {
-            def user = err.getCauses()[0].getUser()
-            echo "Aborted by:\n ${user}"
-            currentBuild.result = "SUCCESS"
-            return
-        }
         stage('Lint HTML, Docker'){
             steps{
               sh  'tidy -q -e *.html'
@@ -90,4 +78,16 @@ pipeline{
             }
         }
     }
+    def userInput
+        try {
+            timeout(time: 60, unit: 'SECONDS') {
+            userInput = input message: 'Proceed to Production?', parameters: [booleanParam(defaultValue: false, description: 'Ticking this box will do a deployment on Prod', name: 'DEPLOY_TO_PROD'),
+                                                                        booleanParam(defaultValue: false, description: 'First Deployment on Prod?', name: 'PROD_BLUE_DEPLOYMENT')]}
+        }
+        catch (err) {
+            def user = err.getCauses()[0].getUser()
+            echo "Aborted by:\n ${user}"
+            currentBuild.result = "SUCCESS"
+            return
+        }
 }
