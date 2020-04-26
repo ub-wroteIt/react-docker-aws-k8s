@@ -27,16 +27,17 @@ pipeline{
         }
 
         stage('Build & Push Docker'){
-             steps{
-                 withEnv(){
+             withEnv(){
                     GIT_COMMIT_ID = sh (script: 'git log -1 --pretty=%H',returnStdout: true).trim()
                     TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S',returnStdout: true).trim()
-                    echo "Git commit id: ${env.GIT_COMMIT_ID}"
                     IMAGETAG="${env.GIT_COMMIT_ID}-${TIMESTAMP}"
+             }       
+             steps{
+                    echo "Git commit id: ${env.GIT_COMMIT_ID}"
                     sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
                     sh 'docker push ujjwaldocker/hello-react:${IMAGETAG}'
                  }
-             }   
+            }   
         }
 
         stage('Create K8s cluster') {
