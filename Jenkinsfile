@@ -3,7 +3,7 @@ pipeline{
     stages{
         stage('Lint HTML, Docker'){
             steps{
-              sh  'tidy -q -e *.html'
+              sh  'tidy -q -e public/*.html'
               sh  'hadolint Dockerfile'
             }            
         }
