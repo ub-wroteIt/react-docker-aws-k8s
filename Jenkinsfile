@@ -81,10 +81,12 @@ pipeline{
             }
             steps{
                withAWS(credentials:'jenkins-aws'){ 
-                    sh 'kubectl create deployment ${DEPLOYMENT_NAME} --image=docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
+                    sh 'echo ${IMAGETAG}'
+                    sh "echo ${env.IMAGETAG}"
+                    sh 'kubectl create deployment ${DEPLOYMENT_NAME} --image=docker.io/ujjwaldocker/hello-react:${env.IMAGETAG}'
                     sh 'kubectl expose deployment/${DEPLOYMENT_NAME} --type="NodePort" --port 8080'
                     sh 'export NODE_PORT=$(kubectl get services/${DEPLOYMENT_NAME} -o go-template="{{(index .spec.ports 0).nodePort}}")'
-                    sh 'echo NODE_PORT=$NODE_PORT'
+                    sh 'echo NODE_PORT=${NODE_PORT}'
                }
             }            
         }
