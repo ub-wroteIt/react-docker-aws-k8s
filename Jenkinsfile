@@ -32,13 +32,15 @@ pipeline{
                     TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S',returnStdout: true).trim()
                     IMAGETAG="${env.GIT_COMMIT_ID}-${TIMESTAMP}"
              }       
-            withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                echo "Git commit id: ${env.GIT_COMMIT_ID}"
-                sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
-                sh 'docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
-                sh 'docker login -u ${USERNAME} -p ${PASSWORD}'
-                sh 'docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
-            }   
+            steps{ 
+                withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    echo "Git commit id: ${env.GIT_COMMIT_ID}"
+                    echo "p ${PASSWORD}, u: ${USERNAME}"
+                    sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
+
+                    sh 'docker login -u ${USERNAME} -p ${PASSWORD} && docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
+                }   
+            }
         }
 
         stage('Create K8s cluster') {
