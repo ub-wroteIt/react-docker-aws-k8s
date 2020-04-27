@@ -1,3 +1,4 @@
+IMAGETAG = ''
 pipeline{
     agent any
     stages{
@@ -26,19 +27,17 @@ pipeline{
              }   
         }
 
-        stage('Build & Push Docker'){
-             environment{
-                    GIT_COMMIT_ID = sh (script: 'git log -1 --pretty=%H',returnStdout: true).trim()
-                    TIMESTAMP = sh (script: 'date +%Y%m%d%H%M%S',returnStdout: true).trim()
-                    IMAGETAG="${env.GIT_COMMIT_ID}-${TIMESTAMP}"
-             }       
+        stage('Build & Push Docker'){       
             steps{ 
                 withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    echo "Git commit id: ${env.GIT_COMMIT_ID}"
+                    script{
+                        IMAGETAG = sh (script: 'git log -1 --pretty=%H',returnStdout: true).trim() 
+                    }
+                    echo "Git commit id: ${IMAGETAG}"
                     echo "p ${PASSWORD}, u: ${USERNAME}"
-                    sh 'docker build -t ujjwaldocker/hello-react:${IMAGETAG} .'
+                    sh "docker build -t ujjwaldocker/hello-react:${IMAGETAG} ."
 
-                    sh 'docker login -u ${USERNAME} -p ${PASSWORD} && docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
+                    sh "docker login -u ${USERNAME} -p ${PASSWORD} && docker push docker.io/ujjwaldocker/hello-react:${IMAGETAG}"
                 }   
             }
         }
@@ -78,12 +77,12 @@ pipeline{
                 KOPS_GREEN_CLUSTER_NAME = "greencluster.k8s.local"
                 DEPLOYMENT_NAME = "react-app-kubernetes"
                 KOPS_STATE_STORE = "s3://greencluster-for-reactapp-state-store"
+                IMAGETAG = sh (script: 'git log -1 --pretty=%H',returnStdout: true).trim() 
             }
             steps{
                withAWS(credentials:'jenkins-aws'){ 
-                    sh 'echo ${IMAGETAG}'
-                    sh "echo ${env.IMAGETAG}"
-                    sh 'kubectl create deployment ${DEPLOYMENT_NAME} --image=docker.io/ujjwaldocker/hello-react:${env.IMAGETAG}'
+                    sh "echo ${IMAGETAG}"
+                    sh "kubectl create deployment ${DEPLOYMENT_NAME} --image=docker.io/ujjwaldocker/hello-react:${IMAGETAG}"
                     sh 'kubectl expose deployment/${DEPLOYMENT_NAME} --type="NodePort" --port 8080'
                     sh 'export NODE_PORT=$(kubectl get services/${DEPLOYMENT_NAME} -o go-template="{{(index .spec.ports 0).nodePort}}")'
                     sh 'echo NODE_PORT=${NODE_PORT}'
@@ -93,6 +92,12 @@ pipeline{
 
 
         stage('Update Blue with New Release'){
+            environment{
+                KOPS_GREEN_CLUSTER_NAME = "greencluster.k8s.local"
+                DEPLOYMENT_NAME = "react-app-kubernetes"
+                KOPS_STATE_STORE = "s3://greencluster-for-reactapp-state-store"
+                IMAGETAG = sh (script: 'git log -1 --pretty=%H',returnStdout: true).trim() 
+            }
             steps{
                input message: 'Finished verification? (Click "Proceed" to continue)'
                sh 'kops version'
