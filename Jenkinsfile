@@ -83,7 +83,7 @@ pipeline{
                withAWS(credentials:'jenkins-aws'){ 
                     sh "echo ${IMAGETAG}"
                     sh "kubectl create deployment ${DEPLOYMENT_NAME} --image=docker.io/ujjwaldocker/hello-react:${IMAGETAG}"
-                    sh 'kubectl expose deployment/${DEPLOYMENT_NAME} --type="NodePort" --port 8080'
+                    sh 'kubectl expose deployment/${DEPLOYMENT_NAME} --type="NodePort" --port 80 --type=LoadBalancer'
                     sh 'export NODE_PORT=$(kubectl get services/${DEPLOYMENT_NAME} -o go-template="{{(index .spec.ports 0).nodePort}}")'
                     sh 'echo NODE_PORT=${NODE_PORT}'
                }
@@ -105,6 +105,7 @@ pipeline{
                sh 'kubectl set image deployments/${DEPLOYMENT_NAME} ${DEPLOYMENT_NAME}=docker.io/ujjwaldocker/hello-react:${IMAGETAG}'
                sh 'kubectl rollout status deployments/kubernetes-bootcamp'
                echo "Deleting Green Environment..."
+               sh 'kubectl config use-context ${KOPS_GREEN_CLUSTER_NAME}'
                sh 'kops delete cluster --name ${KOPS_GREEN_CLUSTER_NAME} --yes'
             }   
         }
